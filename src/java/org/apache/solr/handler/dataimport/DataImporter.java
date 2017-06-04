@@ -320,6 +320,16 @@ public class DataImporter {
     //--珍品定制
     List<Element> redisDataSource = ConfigParseUtil.getChildNodes(e, ConfigNameConstants.REDIS);
     
+    if (!redisDataSource.isEmpty()) {
+      for (Element element : redisDataSource) {
+        Map<String,String> p = new HashMap<>();
+        HashMap<String, String> attrs = ConfigParseUtil.getAllAttributes(element);
+        for (Map.Entry<String, String> entry : attrs.entrySet()) {
+          p.put(entry.getKey(), entry.getValue());
+        }
+        dataSources.put(p.get("name"), p);
+      }
+    }
     return new DIHConfiguration(documentTags.get(0), this, functions, script, dataSources, pw);
   }
     

@@ -1,2 +1,5 @@
-/solr
-/lucene
+/solr/*
+/lucene/*
+/jar-output/*
+/output/*
+/eclipse-build/*

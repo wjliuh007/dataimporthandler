@@ -517,6 +517,12 @@ public class DocBuilder {
             }
             vr.removeNamespace(epw.getEntity().getName());
           }
+          //--定制开发获取redis数据
+          try{
+            Map<String,String> cacheDS = config.getDataSources().get("cache");
+          }catch(Exception ex){
+            
+          }
           if (epw.getEntity().isDocRoot()) {
             if (stop.get())
               return;

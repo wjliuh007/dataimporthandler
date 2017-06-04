@@ -27,7 +27,7 @@
 	<target name="compile">
 		<delete dir="${dest}" failonerror="true"/>
 		<mkdir dir="${dest}"/>
-		<javac srcdir="${src}" destdir="${dest}">
+		<javac srcdir="${src}" destdir="${dest}" debug="true">
 			<classpath>
 			    <fileset dir="${basedir}/solr">
 			        <include name="**/*.jar" />
