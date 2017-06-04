@@ -17,28 +17,38 @@
 
 package org.apache.solr.handler.dataimport;
 
+import static org.apache.solr.handler.dataimport.DataImportHandlerException.SEVERE;
+import static org.apache.solr.handler.dataimport.DataImportHandlerException.wrapAndThrow;
+import static org.apache.solr.handler.dataimport.SolrWriter.LAST_INDEX_KEY;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.solr.common.SolrException;
-import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.SolrCore;
 import org.apache.solr.handler.dataimport.config.ConfigNameConstants;
 import org.apache.solr.handler.dataimport.config.DIHConfiguration;
 import org.apache.solr.handler.dataimport.config.Entity;
 import org.apache.solr.handler.dataimport.config.EntityField;
-
-import static org.apache.solr.handler.dataimport.SolrWriter.LAST_INDEX_KEY;
-import static org.apache.solr.handler.dataimport.DataImportHandlerException.SEVERE;
-import static org.apache.solr.handler.dataimport.DataImportHandlerException.wrapAndThrow;
-
+import org.apache.solr.handler.dataimport.plugin.ZPReidsPlugin;
 import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.SchemaField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * <p> {@link DocBuilder} is responsible for creating Solr documents out of the given configuration. It also maintains
@@ -517,12 +527,13 @@ public class DocBuilder {
             }
             vr.removeNamespace(epw.getEntity().getName());
           }
-          //--定制开发获取redis数据
+          //---------------
           try{
-            Map<String,String> cacheDS = config.getDataSources().get("cache");
+           ZPReidsPlugin.process(this,dataImporter,config,doc);
           }catch(Exception ex){
-            
+            getDebugLogger().log(DIHLogLevels.ENTITY_EXCEPTION, epw.getEntity().getName(), ex);
           }
+          //---------------
           if (epw.getEntity().isDocRoot()) {
             if (stop.get())
               return;
@@ -575,20 +586,6 @@ public class DocBuilder {
       if (verboseDebug) {
         getDebugLogger().log(DIHLogLevels.END_ENTITY, null, null);
       }
-    }
-  }
-
-  static class DocWrapper extends SolrInputDocument {
-    //final SolrInputDocument solrDocument = new SolrInputDocument();
-    Map<String ,Object> session;
-
-    public void setSessionAttribute(String key, Object val){
-      if(session == null) session = new HashMap<>();
-      session.put(key, val);
-    }
-
-    public Object getSessionAttribute(String key) {
-      return session == null ? null : session.get(key);
     }
   }
 
@@ -691,7 +688,7 @@ public class DocBuilder {
     }
   }
 
-  private void addFieldToDoc(Object value, String name, float boost, boolean multiValued, DocWrapper doc) {
+  public void addFieldToDoc(Object value, String name, float boost, boolean multiValued, DocWrapper doc) {
     if (value instanceof Collection) {
       Collection collection = (Collection) value;
       if (multiValued) {

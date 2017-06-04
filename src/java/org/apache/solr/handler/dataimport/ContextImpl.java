@@ -52,7 +52,7 @@ public class ContextImpl extends Context {
 
   private Exception lastException = null;
 
-  DocBuilder.DocWrapper doc;
+  DocWrapper doc;
 
   DocBuilder docBuilder;
 
@@ -149,7 +149,7 @@ public class ContextImpl extends Context {
         globalSession.put(name, val);
       }
     } else if (Context.SCOPE_DOC.equals(scope)) {
-      DocBuilder.DocWrapper doc = getDocument();
+      DocWrapper doc = getDocument();
       if (doc != null) {
         doc.setSessionAttribute(name, val);
       }
@@ -171,7 +171,7 @@ public class ContextImpl extends Context {
         return globalSession.get(name);
       }
     } else if (Context.SCOPE_DOC.equals(scope)) {
-      DocBuilder.DocWrapper doc = getDocument();      
+      DocWrapper doc = getDocument();      
       return doc == null ? null: doc.getSessionAttribute(name);
     } else if (SCOPE_SOLR_CORE.equals(scope)){
        return dataImporter == null ? null : dataImporter.getFromCoreScopeSession(name);
@@ -184,7 +184,7 @@ public class ContextImpl extends Context {
     return parent;
   }
 
-  private DocBuilder.DocWrapper getDocument() {
+  private DocWrapper getDocument() {
     ContextImpl c = this;
     while (true) {
       if (c.doc != null)
@@ -196,7 +196,7 @@ public class ContextImpl extends Context {
     }
   }
 
-  void setDoc(DocBuilder.DocWrapper docWrapper) {
+  void setDoc(DocWrapper docWrapper) {
     this.doc = docWrapper;
   }
 

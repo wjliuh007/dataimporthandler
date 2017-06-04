@@ -17,34 +17,10 @@
 
 package org.apache.solr.handler.dataimport;
 
-import org.apache.solr.common.SolrException;
-import org.apache.solr.core.SolrCore;
-import org.apache.solr.schema.IndexSchema;
-import org.apache.solr.util.SystemIdResolver;
-import org.apache.solr.common.util.NamedList;
-import org.apache.solr.common.util.XMLErrorLogger;
-import org.apache.solr.handler.dataimport.config.ConfigNameConstants;
-import org.apache.solr.handler.dataimport.config.ConfigParseUtil;
-import org.apache.solr.handler.dataimport.config.DIHConfiguration;
-import org.apache.solr.handler.dataimport.config.Entity;
-import org.apache.solr.handler.dataimport.config.PropertyWriter;
-import org.apache.solr.handler.dataimport.config.Script;
-
-import static org.apache.solr.handler.dataimport.DataImportHandlerException.wrapAndThrow;
 import static org.apache.solr.handler.dataimport.DataImportHandlerException.SEVERE;
+import static org.apache.solr.handler.dataimport.DataImportHandlerException.wrapAndThrow;
 import static org.apache.solr.handler.dataimport.DocBuilder.loadClass;
 import static org.apache.solr.handler.dataimport.config.ConfigNameConstants.CLASS;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.apache.commons.io.IOUtils;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -52,13 +28,44 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.solr.common.SolrException;
+import org.apache.solr.common.util.NamedList;
+import org.apache.solr.common.util.XMLErrorLogger;
+import org.apache.solr.core.SolrCore;
+import org.apache.solr.handler.dataimport.config.ConfigNameConstants;
+import org.apache.solr.handler.dataimport.config.ConfigParseUtil;
+import org.apache.solr.handler.dataimport.config.DIHConfiguration;
+import org.apache.solr.handler.dataimport.config.Entity;
+import org.apache.solr.handler.dataimport.config.PropertyWriter;
+import org.apache.solr.handler.dataimport.config.Script;
+import org.apache.solr.schema.IndexSchema;
+import org.apache.solr.util.SystemIdResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisCommands;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 /**
  * <p> Stores all configuration information for pulling and indexing data. </p>
@@ -89,6 +96,7 @@ public class DataImporter {
   private ReentrantLock importLock = new ReentrantLock();
   private boolean isDeltaImportSupported = false;  
   private final String handlerName;  
+  private JedisCommands jedisClient;
 
   /**
    * Only for testing purposes
@@ -215,6 +223,30 @@ public class DataImporter {
       }
 
       dihcfg = readFromXml(document);
+      //---------------
+      Map<String,String> redisDS = dihcfg.getDataSources().get("cache");
+      if(redisDS!=null){
+        boolean cluster = redisDS.get("cluster")!=null?("true".equals(redisDS.get("cluster"))?true:false):false;
+        Set<HostAndPort> nodes = new HashSet<HostAndPort>();
+        if(cluster){
+          JedisPoolConfig jpc = new JedisPoolConfig();
+          
+          String[] hosts = redisDS.get("host").split(",");
+          for(String host:hosts){
+            nodes.add(new HostAndPort(host.split(":")[0], Integer.parseInt(host.split(":")[1])));
+          }
+          JedisCluster jedisCluster = new JedisCluster(nodes, 6000, jpc);
+          setJedisClient(jedisCluster);
+        }else{
+          JedisPoolConfig config = new JedisPoolConfig();  
+          config.setMaxTotal(1024);  
+          config.setMaxIdle(5);  
+          String[] hosts = redisDS.get("host").split(":");   
+          JedisPool pool = new JedisPool(config, hosts[0], Integer.parseInt(hosts[1]), 6000);  
+          setJedisClient(pool.getResource());
+        }
+      }
+      //---------------
       LOG.info("Data Configuration loaded successfully");
     } catch (Exception e) {
       throw new DataImportHandlerException(SEVERE,
@@ -317,7 +349,7 @@ public class DataImporter {
       pw = new PropertyWriter(type, params);
     }
     
-    //--珍品定制
+    //--
     List<Element> redisDataSource = ConfigParseUtil.getChildNodes(e, ConfigNameConstants.REDIS);
     
     if (!redisDataSource.isEmpty()) {
@@ -602,6 +634,14 @@ public class DataImporter {
   }
   Object getFromCoreScopeSession(String key) {
     return coreScopeSession.get(key);
+  }
+
+  public JedisCommands getJedisClient() {
+    return jedisClient;
+  }
+
+  public void setJedisClient(JedisCommands jedisClient) {
+    this.jedisClient = jedisClient;
   }
 
   public static final String COLUMN = "column";
