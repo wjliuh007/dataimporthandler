@@ -28,7 +28,7 @@
 		<delete dir="${dest}" failonerror="true"/>
 		<delete file="D:\solr-tomcat\webapps\solr\WEB-INF\lib\solr-dataimporthandler-5.3.1.jar" />
 		<mkdir dir="${dest}"/>
-		<javac srcdir="${src}" destdir="${dest}" debug="true">
+		<javac srcdir="${src}" destdir="${dest}" debug="true" includeantruntime="on">
 			<classpath>
 			    <fileset dir="${basedir}/solr">
 			        <include name="**/*.jar" />
