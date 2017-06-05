@@ -26,7 +26,7 @@
 	<property name="jarname" value="solr-dataimporthandler-5.3.1.jar"/>
 	<target name="compile">
 		<delete dir="${dest}" failonerror="true"/>
-		<delete file="D:\solr-tomcat\webapps\solr\WEB-INF\lib\solr-dataimporthandler-5.3.1.jar" />
+		<delete file="F:\tomcat\tomcat-solr\webapps\solr\WEB-INF\lib\solr-dataimporthandler-5.3.1.jar" />
 		<mkdir dir="${dest}"/>
 		<javac srcdir="${src}" destdir="${dest}" debug="true" includeantruntime="on">
 			<classpath>
@@ -46,6 +46,6 @@
 		<jar destfile="${basedir}/jar-output/${jarname}" basedir="${dest}">
 
 		</jar>
-		<copy file="${basedir}/jar-output/${jarname}" todir="D:\solr-tomcat\webapps\solr\WEB-INF\lib" ></copy>
+		<copy file="${basedir}/jar-output/${jarname}" todir="F:\tomcat\tomcat-solr\webapps\solr\WEB-INF\lib" ></copy>
 	</target>
 </project>

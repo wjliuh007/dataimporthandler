@@ -529,9 +529,14 @@ public class DocBuilder {
           }
           //---------------
           try{
-           ZPReidsPlugin.process(this,dataImporter,config,doc);
+            if("product".equals(epw.getEntity().getName())){
+              ZPReidsPlugin.process(this,dataImporter,config,doc,(Long)arow.get("product_id"));
+            }
+           
           }catch(Exception ex){
-            getDebugLogger().log(DIHLogLevels.ENTITY_EXCEPTION, epw.getEntity().getName(), ex);
+            if (verboseDebug) {
+              getDebugLogger().log(DIHLogLevels.ENTITY_EXCEPTION, epw.getEntity().getName(), ex);
+            }
           }
           //---------------
           if (epw.getEntity().isDocRoot()) {

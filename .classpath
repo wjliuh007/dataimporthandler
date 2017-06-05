@@ -3,7 +3,7 @@
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="src/test-files"/>
 	<classpathentry kind="lib" path="libs/solr-core-5.3.1.jar"/>
-	<classpathentry kind="lib" path="libs/solr-solrj-5.3.1.jar"/>
+	<classpathentry kind="lib" path="libs/solr-solrj-5.3.1.jar" sourcepath="E:/apache-maven-3.3.9/.m2/repository/org/apache/solr/solr-solrj/5.3.1/solr-solrj-5.3.1-sources.jar"/>
 	<classpathentry kind="lib" path="libs/lucene-core-5.3.1.jar"/>
 	<classpathentry kind="lib" path="libs/lucene-analyzers-common-5.3.1.jar"/>
 	<classpathentry kind="lib" path="libs/lucene-analyzers-kuromoji-5.3.1.jar"/>
@@ -25,8 +25,8 @@
 	<classpathentry kind="lib" path="libs/api-pub-1.1.2-SNAPSHOT.jar" sourcepath="libs/api-pub-1.1.2-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="libs/jedis-2.8.0.jar" sourcepath="libs/jedis-2.8.0-sources.jar"/>
 	<classpathentry kind="lib" path="libs/commons-pool2-2.3.jar" sourcepath="libs/commons-pool2-2.3-sources.jar"/>
-	<classpathentry kind="lib" path="libs/fastjson-1.1.41.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java_7"/>
+	<classpathentry kind="lib" path="libs/fastjson-1.1.41.jar" sourcepath="E:/apache-maven-3.3.9/.m2/repository/com/alibaba/fastjson/1.1.41/fastjson-1.1.41-sources.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0_79"/>
 	<classpathentry kind="lib" path="lucene/analysis/icu/lib/icu4j-54.1.jar"/>
 	<classpathentry kind="lib" path="lucene/analysis/morfologik/lib/morfologik-fsa-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lucene/analysis/morfologik/lib/morfologik-polish-1.7.1.jar"/>
